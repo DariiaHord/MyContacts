@@ -26,8 +26,8 @@ fun DetailsContactScreen(
     onDeleteSuccess: () -> Unit,
     onBackClick: () -> Unit
 ) {
-    val contacts by viewModel.contacts.collectAsStateWithLifecycle()
-    val contact = contacts.find { it.id == contactId }
+    val contact by viewModel.getContactById(contactId)
+        .collectAsStateWithLifecycle(initialValue = null)
 
     Scaffold(
         topBar = {
@@ -55,14 +55,15 @@ fun DetailsContactScreen(
             )
         }
     ) { paddingValues ->
-        if (contact == null) {
+        val currentContact = contact
+        if (currentContact == null) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Контакт не знайдено")
+                Text("Об’єкт не знайдено")
             }
         } else {
             Column(
@@ -85,14 +86,14 @@ fun DetailsContactScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = contact.initials,
+                            text = currentContact.initials,
                             fontSize = 36.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color.Black
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = contact.name,
+                            text = currentContact.name,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.Black
@@ -107,17 +108,17 @@ fun DetailsContactScreen(
                     }
                 }
 
-                InfoBlockCard(label = "Телефон", value = contact.phone)
+                InfoBlockCard(label = "Телефон", value = currentContact.phone)
 
                 InfoBlockCard(
                     label = "Email",
-                    value = contact.email.ifBlank { "Не вказано" }
+                    value = currentContact.email.ifBlank { "Не вказано" }
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
-                    onClick = { onEditClick(contact.id) },
+                    onClick = { onEditClick(currentContact.id) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
@@ -132,7 +133,7 @@ fun DetailsContactScreen(
 
                 Button(
                     onClick = {
-                        viewModel.deleteContact(contact.id)
+                        viewModel.deleteContact(currentContact)
                         onDeleteSuccess()
                     },
                     modifier = Modifier

@@ -20,7 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.mycontacts.model.Contact
+import com.example.mycontacts.data.local.ContactEntity
 import com.example.mycontacts.viewmodel.ContactsViewModel
 
 val OrangePrimary = Color(0xFFFF9500)
@@ -68,7 +68,7 @@ fun ContactsListScreen(
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Список контактів порожній", color = Color.Gray)
+                Text("Список контактів порожній. Натисніть +", color = Color.Gray)
             }
         } else {
             LazyColumn(
@@ -91,7 +91,7 @@ fun ContactsListScreen(
 
 @Composable
 fun ContactCard(
-    contact: Contact,
+    contact: ContactEntity,
     onClick: () -> Unit
 ) {
     Card(

@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.mycontacts.viewmodel.ContactsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -18,15 +19,26 @@ fun AddContactScreen(
     contactId: Int? = null,
     onNavigateBack: () -> Unit
 ) {
-    val existingContact = remember(contactId) {
-        contactId?.let { viewModel.getContactById(it) }
+    val existingContact by if (contactId != null) {
+        viewModel.getContactById(contactId).collectAsStateWithLifecycle(initialValue = null)
+    } else {
+        remember { mutableStateOf(null) }
     }
 
-    var name by remember { mutableStateOf(existingContact?.name ?: "") }
-    var phone by remember { mutableStateOf(existingContact?.phone ?: "") }
-    var email by remember { mutableStateOf(existingContact?.email ?: "") }
+    var name by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
 
-    val screenTitle = if (existingContact == null) "Новий контакт" else "Редагувати контакт"
+    // Коли Room завантажить існуючий контакт для редагування, заповнюємо поля
+    LaunchedEffect(existingContact) {
+        existingContact?.let { contact ->
+            name = contact.name
+            phone = contact.phone
+            email = contact.email
+        }
+    }
+
+    val screenTitle = if (contactId == null) "Новий контакт" else "Редагувати контакт"
 
     Scaffold(
         topBar = {
@@ -84,10 +96,10 @@ fun AddContactScreen(
             Button(
                 onClick = {
                     if (name.isNotBlank() && phone.isNotBlank()) {
-                        if (existingContact == null) {
+                        if (contactId == null) {
                             viewModel.addContact(name, phone, email)
                         } else {
-                            viewModel.updateContact(existingContact.id, name, phone, email)
+                            viewModel.updateContact(contactId, name, phone, email)
                         }
                         onNavigateBack()
                     }
